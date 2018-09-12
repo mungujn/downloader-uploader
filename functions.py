@@ -10,24 +10,18 @@ ACCESS_TOKEN = os.getenv('ACCESS_TOKEN')
 storage = dropbox.Dropbox(ACCESS_TOKEN)
 
 
+def getRemoteFileNames(remote_folder):
+    filenames = [file.name for file in storage.files_list_folder(
+        remote_folder).entries]
+    return filenames
+
+
 def getFileNames(folder):
     filenames = []
     for file in listdir(folder):
         if isfile(join(folder, file)):
-            filenames.append(join(folder, file))
+            filenames.append(file)
     return filenames
-
-
-def downloadFile(path):
-    """Download a file"""
-    try:
-        md, res = storage.files_download(path)
-    except dropbox.exceptions.HttpError as error:
-        print('*** HTTP error: ', error)
-        return None
-    data = res.content
-    logging.debug(f'{len(data)} bytes; md: {md}')
-    return data
 
 
 def uploadFile(local_path, remote_path):
@@ -43,4 +37,22 @@ def uploadFile(local_path, remote_path):
 
     name = res.name.encode('utf8')
     logging.debug(f'uploaded as: {name}')
-    return res
+    return name
+
+
+def downloadFile(path):
+    """Download a file"""
+    try:
+        md, res = storage.files_download(path)
+    except dropbox.exceptions.HttpError as error:
+        print('*** HTTP error: ', error)
+        return None
+    data = res.content
+    logging.debug(f'{len(data)} bytes; md: {md}')
+    return data
+
+
+def saveFile(data, path):
+    with open(path, 'w+b') as f:
+        written = f.write(data)
+    return written
