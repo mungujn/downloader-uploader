@@ -13,7 +13,7 @@ jobs = {}
 def createDownloadJob():
     """Handler function for starting a download job. \n
     Creates and starts a download job. \n
-    Returns immediately and downloads continue in a background thread.
+    Returns the job data immediately and downloads continue in a background thread.
      """
     try:
         job_id = random.randint(100, 200)
@@ -113,6 +113,8 @@ def downloadFiles(job):
             functions.saveFile('all', f'{file}', file_data)
 
     job['complete'] = True
+    print(
+        f'Job {job_id}: Downloading {number_of_files} files to ../files/all/ folder has completed')
 
 
 def uploadFiles(local_folder, job, destination_folder):
@@ -133,6 +135,8 @@ def uploadFiles(local_folder, job, destination_folder):
                                  f'{destination_folder}/{file}')
 
     job['complete'] = True
+    print(
+        f'Job {job_id}: Uploading {number_of_files} files to {local_folder} folder has completed')
 
 
 @contextlib.contextmanager
