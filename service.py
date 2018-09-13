@@ -3,17 +3,18 @@ import random
 import threading
 import contextlib
 from flask import Flask, jsonify, request
-from flask_cors import CORS
 import responses
 app = Flask(__name__)
-CORS(app, origins=[])
 
 jobs = {}
 
 
 @app.route('/download-job', methods=['POST'])
-def newDownloadJob():
-    """Creates and starts a download job. Returns immediately and downloads continue in a background thread"""
+def createDownloadJob():
+    """Handler function for starting a download job. \n
+    Creates and starts a download job. \n
+    Returns immediately and downloads continue in a background thread.
+     """
     try:
         job_id = random.randint(100, 200)
         job = {'type': 'download', 'complete': False,
@@ -22,7 +23,7 @@ def newDownloadJob():
         download_thread = threading.Thread(
             target=downloadFiles, args=(job,))
         download_thread.start()
-        return responses.respondOk(job)
+        return responses.respondCreated(job)
     except Exception as error:
         print(Exception)
         return responses.respondInternalServerError(error)
@@ -30,6 +31,9 @@ def newDownloadJob():
 
 @app.route('/download-job/<job_id>', methods=['GET'])
 def checkDownloadJobStatus(job_id):
+    """Handler function for checking the status of a download job. \n
+    Responds with the data for the specified job
+    """
     try:
         try:
             job = jobs[job_id]
@@ -43,34 +47,44 @@ def checkDownloadJobStatus(job_id):
 
 
 @app.route('/upload-job', methods=['POST'])
-def newUploadJob():
-    """
-    Creates and starts an upload jobs.
-    One job per folder in the working directory except one called 'all'.
+def createUploadJob():
+    """Handler function for uploading a set of folders. \n
+    Creates and starts upload jobs for the folders specified in the
+    post requests' json payload. \n
     Returns upload job ids immediately and uploads continue in a background thread
     """
+    try:
+        classes = validateDataForPostUploadJob(request)
+        if not classes == False:
+            all_folders = functions.getFolderNames('')
 
-    folder_names = functions.getFolderNames('../files/')
+            folders_to_upload = [
+                name for name in classes if name in all_folders]
 
-    if 'all' in folder_names:
-        folder_names.remove('all')
+            upload_jobs = []
+            for folder in folders_to_upload:
+                job_id = random.randint(300, 400)
+                job = {'type': 'upload', 'complete': False,
+                       'percentage': 0, 'id': job_id}
+                jobs[job_id] = job
+                upload_jobs.append(job)
+                upload_thread = threading.Thread(name=f'{folder}-upload', target=uploadFiles, args=(
+                    f'{folder}', job, f'/{folder}'))
+                upload_thread.start()
 
-    upload_jobs = []
-    for folder in folder_names:
-        job_id = random.randint(300, 400)
-        job = {'type': 'upload', 'complete': False,
-               'percentage': 0, 'id': job_id}
-        jobs[job_id] = job
-        upload_jobs.append(job)
-        upload_thread = threading.Thread(name=f'{folder}-upload', target=uploadFiles, args=(
-            f'../files/{folder}', job, f'/{folder}'))
-        upload_thread.start()
-
-    return responses.respondCreated(upload_jobs)
+            return responses.respondCreated(upload_jobs)
+        else:
+            return responses.respondBadRequest('Classes not sent')
+    except Exception as error:
+        print(error)
+        return responses.respondInternalServerError(error)
 
 
 @app.route('/upload-job/<job_id>', methods=['GET'])
 def checkUploadJobStatus(job_id):
+    """Handler for checking the status of an upload. \n
+    Returns data on the job with the specified id
+    """
     try:
         try:
             job = jobs[job_id]
@@ -96,13 +110,15 @@ def downloadFiles(job):
     for file in files:
         with timer(job):
             file_data = functions.downloadFile(f'/all/{file}')
-            functions.saveFile(file_data, f'../files/all/{file}')
+            functions.saveFile('all', f'{file}', file_data)
 
     job['complete'] = True
 
 
 def uploadFiles(local_folder, job, destination_folder):
-    """Upload all files in a local folder to dropbox"""
+    """Upload all files in a local_folder to  a destination_folder in dropbox \n
+    Job is the job object for the current upload context
+    """
     files = functions.getFileNames(local_folder)
     number_of_files = len(files)
     job['number_of_files'] = number_of_files
@@ -113,7 +129,7 @@ def uploadFiles(local_folder, job, destination_folder):
 
     for file in files:
         with timer(job):
-            functions.uploadFile(f'{local_folder}/{file}',
+            functions.uploadFile(f'{local_folder}', f'{file}',
                                  f'{destination_folder}/{file}')
 
     job['complete'] = True
@@ -132,6 +148,15 @@ def timer(job):
         job['percentage'] = percentage
         job_id = job['id']
         print(f'Job {job_id} is {percentage} percent complete')
+
+
+def validateDataForPostUploadJob(request):
+    if request.is_json:
+        data = request.get_json()
+        classes = data['classes']
+        if len(classes) >= 1:
+            return classes
+    return False
 
 
 if __name__ == '__main__':

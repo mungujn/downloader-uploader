@@ -1,43 +1,48 @@
 import os
 import dropbox
 import logging
-from os import listdir
 from os.path import isfile, join, isdir
 from dotenv import load_dotenv
 load_dotenv()
 
 ACCESS_TOKEN = os.getenv('ACCESS_TOKEN')
 storage = dropbox.Dropbox(ACCESS_TOKEN)
+working_directory = join('..', 'files')
 
 
 def getRemoteFileNames(remote_folder):
-    """Get names of files in a remote folder"""
+    """Get names of files in a remote_folder"""
     filenames = [file.name for file in storage.files_list_folder(
         remote_folder).entries]
     return filenames
 
 
-def getFileNames(folder):
-    """Get names of files in a local folder"""
-    filenames = []
-    for file in listdir(folder):
-        if isfile(join(folder, file)):
-            filenames.append(file)
-    return filenames
+def getFileNames(folder_name):
+    """Get names of files in a folder_name"""
+    path = join(working_directory, folder_name)
+    file_names = []
+    for file in os.listdir(path):
+        if isfile(join(path, file)):
+            file_names.append(file)
+    return file_names
 
 
-def getFolderNames(folder):
-    """Get names of sub folders folders in a local folder"""
+def getFolderNames(folder_name):
+    """Get names of sub folders in a folder_name"""
+    path = join(working_directory, folder_name)
     folder_names = []
-    for file in listdir(folder):
-        if isdir(join(folder, file)):
+    for file in os.listdir(path):
+        if isdir(join(path, file)):
             folder_names.append(file)
     return folder_names
 
 
-def uploadFile(local_path, remote_path):
-    """upload a file"""
+def uploadFile(local_folder, file_name, remote_path):
+    """upload file in local_folder with file name file_name to remote_path \n
+    Returns the uploaded files name
+    """
     mode = (dropbox.files.WriteMode.overwrite)
+    local_path = join(working_directory, local_folder, file_name)
     with open(local_path, 'rb') as f:
         data = f.read()
     try:
@@ -51,10 +56,10 @@ def uploadFile(local_path, remote_path):
     return name
 
 
-def downloadFile(path):
-    """Download a file"""
+def downloadFile(remote_path):
+    """Download a file from  a remote_path"""
     try:
-        md, res = storage.files_download(path)
+        md, res = storage.files_download(remote_path)
     except dropbox.exceptions.HttpError as error:
         print('*** HTTP error: ', error)
         return None
@@ -63,7 +68,9 @@ def downloadFile(path):
     return data
 
 
-def saveFile(data, path):
+def saveFile(folder, file_name, data):
+    """Save data as file_name in folder"""
+    path = join(working_directory, folder, file_name)
     with open(path, 'w+b') as f:
         written = f.write(data)
     return written
