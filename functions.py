@@ -2,7 +2,7 @@ import os
 import dropbox
 import logging
 from os import listdir
-from os.path import isfile, join
+from os.path import isfile, join, isdir
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -11,17 +11,28 @@ storage = dropbox.Dropbox(ACCESS_TOKEN)
 
 
 def getRemoteFileNames(remote_folder):
+    """Get names of files in a remote folder"""
     filenames = [file.name for file in storage.files_list_folder(
         remote_folder).entries]
     return filenames
 
 
 def getFileNames(folder):
+    """Get names of files in a local folder"""
     filenames = []
     for file in listdir(folder):
         if isfile(join(folder, file)):
             filenames.append(file)
     return filenames
+
+
+def getFolderNames(folder):
+    """Get names of sub folders folders in a local folder"""
+    folder_names = []
+    for file in listdir(folder):
+        if isdir(join(folder, file)):
+            folder_names.append(file)
+    return folder_names
 
 
 def uploadFile(local_path, remote_path):
