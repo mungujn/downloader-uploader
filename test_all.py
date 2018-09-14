@@ -5,15 +5,21 @@ from service import app
 import os
 app.testing = True
 client = app.test_client()
-skip = pytest.mark.skip(reason='fixing other tests')
+from dotenv import load_dotenv
+load_dotenv()
+ACCESS_TOKEN = os.getenv('ACCESS_TOKEN')
+functions.setUpDropbox(ACCESS_TOKEN)
+# skip = pytest.mark.skip(reason='fixing other tests')
 
 
 def test_postDownloadJob():
     """tests the /download-job POST route that adds a new download job
     """
-    r = client.post('/download-job')
+    r = client.post('/download-job', headers={'Token': ACCESS_TOKEN})
     data = json.loads(r.data)
     assert data['complete'] == False
+
+test_postDownloadJob()
 
 
 def test_getDownloadJob():
@@ -32,7 +38,7 @@ def test_postUploadJob():
     """
     r = client.post('/upload-job', json={
         'classes': ['cat', 'dog', 'car']
-    })
+    }, headers={'Token': ACCESS_TOKEN})
     data = json.loads(r.data)
     assert len(data) >= 0
 
@@ -64,7 +70,7 @@ def test_getFileNames():
 
 
 def test_getFolderNames():
-    """test getting names of sub folders in a local folder
+    """test gettingng names of sub folders in a local folder
     """
     names = functions.getFolderNames('')
     print(names)
@@ -91,9 +97,6 @@ def test_downloadFile():
         local_data = f.read()
 
     assert remote_data == local_data
-
-
-test_downloadFile()
 
 
 def test_saveFile():
