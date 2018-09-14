@@ -2,12 +2,22 @@ import os
 import dropbox
 import logging
 from os.path import isfile, join, isdir
-from dotenv import load_dotenv
-load_dotenv()
 
-ACCESS_TOKEN = os.getenv('ACCESS_TOKEN')
-storage = dropbox.Dropbox(ACCESS_TOKEN)
+token = None
+storage = None
 working_directory = join('..', 'files')
+
+
+def setToken(new_token):
+    global token
+    if not new_token == token:
+        token = new_token
+        setUpDropbox(new_token)
+
+
+def setUpDropbox(token):
+    global storage
+    storage = dropbox.Dropbox(token)
 
 
 def getRemoteFileNames(remote_folder):
