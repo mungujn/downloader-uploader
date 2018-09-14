@@ -1,4 +1,5 @@
 import functions
+from functools import wraps
 import random
 import threading
 import contextlib
@@ -9,13 +10,27 @@ app = Flask(__name__)
 jobs = {}
 
 
+def tokenRequired(f):
+    """Middleware for checking that the dropbox token is sent"""
+    @wraps(f)
+    def decoratedFunction(*args, **kwargs):
+        token = request.headers.get('Token', None)
+        if token is None:
+            return responses.respondUnauthorized('Send token')
+        return f(*args, **kwargs)
+
+    return decoratedFunction
+
+
 @app.route('/download-job', methods=['POST'])
+@tokenRequired
 def createDownloadJob():
     """Handler function for starting a download job. \n
     Creates and starts a download job. \n
     Returns the job data immediately and downloads continue in a background thread.
      """
     try:
+        functions.setToken(request.headers.get('Token'))
         job_id = random.randint(100, 200)
         job = {'type': 'download', 'complete': False,
                'percentage': 0, 'id': job_id}
@@ -48,6 +63,7 @@ def checkDownloadJobStatus(job_id):
 
 
 @app.route('/upload-job', methods=['POST'])
+@tokenRequired
 def createUploadJob():
     """Handler function for uploading a set of folders. \n
     Creates and starts upload jobs for the folders specified in the
@@ -57,6 +73,7 @@ def createUploadJob():
     try:
         classes = validateDataForPostUploadJob(request)
         if not classes == False:
+            functions.setToken(request.headers.get('Token'))
             all_folders = functions.getFolderNames('')
 
             folders_to_upload = [
