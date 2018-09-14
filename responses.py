@@ -7,8 +7,8 @@ def respondInternalServerError(error):
 
 
 def respondBadRequest(message):
-    """Returns an object which flask will parse and transform into a 403 response"""
-    return (jsonify({'message': message}), 403)
+    """Returns an object which flask will parse and transform into a 400 response"""
+    return (jsonify({'message': message}), 400)
 
 
 def respondUnauthorized(message):
