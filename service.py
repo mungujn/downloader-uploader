@@ -39,6 +39,7 @@ def checkDownloadJobStatus(job_id):
             job = jobs[job_id]
             return responses.respondOk(job)
         except KeyError as error:
+            print(jobs)
             return responses.respondBadRequest(f'Job {job_id} not found')
     except Exception as error:
         print('Error:', type(error))
@@ -66,10 +67,10 @@ def createUploadJob():
                 job_id = random.randint(300, 400)
                 job = {'type': 'upload', 'complete': False,
                        'percentage': 0, 'id': job_id}
-                jobs[job_id] = job
+                jobs[f'{job_id}'] = job
                 upload_jobs.append(job)
                 upload_thread = threading.Thread(name=f'{folder}-upload', target=uploadFiles, args=(
-                    f'{folder}', job, f'/{folder}'))
+                    f'{folder}', job, f'/{folder}', ))
                 upload_thread.start()
 
             return responses.respondCreated(upload_jobs)
@@ -99,44 +100,60 @@ def checkUploadJobStatus(job_id):
 
 def downloadFiles(job):
     """Upload all files in a local folder to dropbox"""
-    files = functions.getRemoteFileNames('/all')
-    number_of_files = len(files)
-    job['number_of_files'] = number_of_files
-    job['processed'] = 0
-    job_id = job['id']
-    print(
-        f'Job {job_id}: Downloading {number_of_files} files to ../files/all/ folder has started')
+    try:
+        files = functions.getRemoteFileNames('/all')
+        number_of_files = len(files)
+        job['number_of_files'] = number_of_files
+        job['processed'] = 0
+        job_id = job['id']
+        print(
+            f'Job {job_id}: Downloading {number_of_files} files to ../files/all/ folder has started')
 
-    for file in files:
-        with timer(job):
-            file_data = functions.downloadFile(f'/all/{file}')
-            functions.saveFile('all', f'{file}', file_data)
+        for file in files:
+            with timer(job):
+                file_data = functions.downloadFile(f'/all/{file}')
+                functions.saveFile('all', f'{file}', file_data)
 
-    job['complete'] = True
-    print(
-        f'Job {job_id}: Downloading {number_of_files} files to ../files/all/ folder has completed')
+        job['complete'] = True
+        print(
+            f'Job {job_id}: Downloading {number_of_files} files to ../files/all/ folder has completed')
+    except Exception as error:
+        print('****error-message****')
+        job['complete'] = True
+        print(
+            f'Job {job_id}: Downloading {number_of_files} files to ../files/all/ folder has failed')
+        print(error)
+        print('****end-of-error-message****')
 
 
 def uploadFiles(local_folder, job, destination_folder):
     """Upload all files in a local_folder to  a destination_folder in dropbox \n
     Job is the job object for the current upload context
     """
-    files = functions.getFileNames(local_folder)
-    number_of_files = len(files)
-    job['number_of_files'] = number_of_files
-    job['processed'] = 0
-    job_id = job['id']
-    print(
-        f'Job {job_id}: Uploading {number_of_files} files to {local_folder} folder has started')
+    try:
+        files = functions.getFileNames(local_folder)
+        number_of_files = len(files)
+        job['number_of_files'] = number_of_files
+        job['processed'] = 0
+        job_id = job['id']
+        print(
+            f'Job {job_id}: Uploading {number_of_files} files to {local_folder} folder has started')
 
-    for file in files:
-        with timer(job):
-            functions.uploadFile(f'{local_folder}', f'{file}',
-                                 f'{destination_folder}/{file}')
+        for file in files:
+            with timer(job):
+                functions.uploadFile(f'{local_folder}', f'{file}',
+                                     f'{destination_folder}/{file}')
 
-    job['complete'] = True
-    print(
-        f'Job {job_id}: Uploading {number_of_files} files to {local_folder} folder has completed')
+        job['complete'] = True
+        print(
+            f'Job {job_id}: Uploading {number_of_files} files to {local_folder} folder has completed')
+    except Exception as error:
+        print('****error-message****')
+        job['complete'] = True
+        print(
+            f'Job {job_id}: Uploading {number_of_files} files to {local_folder} folder has failed')
+        print(error)
+        print('****end-of-error-message****')
 
 
 @contextlib.contextmanager
@@ -150,11 +167,16 @@ def timer(job):
         processed = job['processed']
         percentage = int((processed/number_of_files)*100)
         job['percentage'] = percentage
-        job_id = job['id']
-        print(f'Job {job_id} is {percentage} percent complete')
+        # job_id = job['id']
+        # print(f'Job {job_id} is {percentage} percent complete')
 
 
 def validateDataForPostUploadJob(request):
+    """Validates data for a post upload job route
+
+    Arguments:
+        request {flask request object} -- [flask request object]
+    """
     if request.is_json:
         data = request.get_json()
         classes = data['classes']
