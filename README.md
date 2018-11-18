@@ -1,6 +1,7 @@
 # File Uploader, Downloader service
 
 [![Build Status](https://travis-ci.com/mungujn/downloader-uploader.svg?branch=master)](https://travis-ci.com/mungujn/downloader-uploader)
+
 [![codecov](https://codecov.io/gh/mungujn/downloader-uploader/branch/master/graph/badge.svg)](https://codecov.io/gh/mungujn/downloader-uploader)
 
 ## Overview
@@ -23,4 +24,4 @@ This service handles the uploading and downloading of files to and from Dropbox.
 -   Set the token as an environment variable
 -   Test with pytest, after all tests pass you can start modifying for your own use
 
-This service functions independently, but I built it to work in tandem with the classifier service available [here](https://github.com/mungujn/image-classifier). This downloader and the classifier system can be combined and used as a cloud storage image classification application, such as [this](https://github.com/mungujn/image-classification-system).
+This service functions independently, but I built it to work in tandem with the classifier service available [here](https://github.com/mungujn/image-classifier). This downloader and the classifier can be combined and used as a cloud storage image classification system, such as [this](https://github.com/mungujn/image-classification-system).
