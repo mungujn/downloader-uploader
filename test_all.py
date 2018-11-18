@@ -13,8 +13,10 @@ AUTHORIZATION = os.environ['SERVICE_KEY']
 functions.setUpDropbox(ACCESS_TOKEN)
 # skip = pytest.mark.skip(reason='fixing other tests')
 
+
 def createWorkingDir():
     '''create folders'''
+
 
 def test_postDownloadJob():
     '''tests the /download-job POST route that adds a new download job
@@ -118,7 +120,8 @@ def test_downloadFile():
     '''
     remote_data = functions.downloadFile('/test/test-download.jpg')
 
-    path = os.path.join('..', 'classifier', 'files', 'test-download.jpg')
+    path = os.path.join(os.environ['BASE'], os.environ['FOLDER'],
+                        os.environ['SUB_FOLDER'], 'test-download.jpg')
     with open(path, 'rb') as f:
         local_data = f.read()
 
