@@ -141,6 +141,22 @@ def test_saveFile():
 
 # test_saveFile()
 
+def test_400errors():
+    '''test for error cases'''
+    r = client.post(
+        '/upload-job', headers={'Token': ACCESS_TOKEN, 'Authorization': AUTHORIZATION})
+
+    assert r.status_code == 400
+
+
+def test_storageProviderErrors():
+    '''test for provider error cases'''
+    try:
+        functions.downloadFiles({})
+        functions.uploadFiles('', {}, '')
+    except Exception as e:
+        print(e)
+
 
 def test_common():
     '''test general files to improve coverage
@@ -155,7 +171,6 @@ def test_common():
         responses.respondInternalServerError()
         responses.respondOk('string')
         responses.respondUnauthorized('string')
-        responses.respondWithData({'key': 'value'})
 
 
 # test_common()

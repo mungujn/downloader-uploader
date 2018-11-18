@@ -1,7 +1,6 @@
 # File Uploader, Downloader service
 
 [![Build Status](https://travis-ci.com/mungujn/downloader-uploader.svg?branch=master)](https://travis-ci.com/mungujn/downloader-uploader)
-
 [![codecov](https://codecov.io/gh/mungujn/downloader-uploader/branch/master/graph/badge.svg)](https://codecov.io/gh/mungujn/downloader-uploader)
 
 ## Overview

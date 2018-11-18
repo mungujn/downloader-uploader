@@ -44,7 +44,7 @@ def checkDownloadJobStatus(job_id):
         log.info(f'/download-job/{job_id}'.center(20, '-'))
         try:
             job = jobs[job_id]
-            return responses.respondOk(job)
+            return responses.respondWithData(job)
         except KeyError as error:
             log.info(jobs)
             return responses.respondBadRequest(f'Job {job_id} not found')
@@ -101,7 +101,7 @@ def checkUploadJobStatus(job_id):
         log.info(f'/upload-job/{job_id}'.center(20, '-'))
         try:
             job = jobs[job_id]
-            return responses.respondOk(job)
+            return responses.respondWithData(job)
         except KeyError as error:
             return responses.respondBadRequest(f'Job {job_id} not found')
     except Exception as error:
