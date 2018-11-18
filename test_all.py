@@ -13,6 +13,8 @@ AUTHORIZATION = os.environ['SERVICE_KEY']
 functions.setUpDropbox(ACCESS_TOKEN)
 # skip = pytest.mark.skip(reason='fixing other tests')
 
+def createWorkingDir():
+    '''create folders'''
 
 def test_postDownloadJob():
     '''tests the /download-job POST route that adds a new download job

@@ -10,7 +10,9 @@ from os.path import isfile, join, isdir
 
 token = None
 storage = None
-working_directory = join('..', 'classifier', 'files')
+
+working_directory = join(
+    os.environ['BASE'], os.environ['FOLDER'], os.environ['SUB_FOLDER'])
 
 
 def setToken(new_token):
