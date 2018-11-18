@@ -23,7 +23,7 @@ def test_postDownloadJob():
     assert data['complete'] == False
 
 
-test_postDownloadJob()
+# test_postDownloadJob()
 
 
 def test_getDownloadJob():
@@ -31,10 +31,14 @@ def test_getDownloadJob():
     of a download job
     '''
     job_id = 255
-    r = client.get(f'/download-job/{job_id}', headers={'Authorization': AUTHORIZATION})
+    r = client.get(f'/download-job/{job_id}',
+                   headers={'Authorization': AUTHORIZATION})
     data = json.loads(r.data)
     print(data)
     assert data['message'] == f'Job {job_id} not found'
+
+
+# test_getDownloadJob()
 
 
 def test_postUploadJob():
@@ -47,14 +51,20 @@ def test_postUploadJob():
     assert len(data) >= 0
 
 
+# test_postUploadJob()
+
+
 def test_getUploadJob():
     '''tests the /upload-job/<job_id> GET route that gets upload job
     '''
     job_id = 256
-    r = client.get(f'/upload-job/{job_id}', headers={'Authorization': AUTHORIZATION})
+    r = client.get(f'/upload-job/{job_id}',
+                   headers={'Authorization': AUTHORIZATION})
     data = json.loads(r.data)
     print(data)
     assert data['message'] == f'Job {job_id} not found'
+
+# test_getUploadJob()
 
 
 def test_getRemoteFileNames():
@@ -64,6 +74,8 @@ def test_getRemoteFileNames():
     print(files)
     assert len(files) == 2
 
+# test_getRemoteFileNames()
+
 
 def test_getFileNames():
     '''test getting local filenames
@@ -71,6 +83,8 @@ def test_getFileNames():
     files = functions.getFileNames('category-1')
     print(files)
     assert len(files) == 4
+
+# test_getFileNames()
 
 
 def test_getFolderNames():
@@ -82,6 +96,9 @@ def test_getFolderNames():
     assert len(names) >= 2
 
 
+# test_getFolderNames()
+
+
 def test_uploadFile():
     '''test uploading files
     '''
@@ -91,16 +108,21 @@ def test_uploadFile():
     assert result == b'test-upload.jpg'
 
 
+# test_uploadFile()
+
+
 def test_downloadFile():
     '''test downloading files
     '''
     remote_data = functions.downloadFile('/test/test-download.jpg')
 
-    path = os.path.join('..', 'files', 'test-download.jpg')
+    path = os.path.join('..', 'classifier', 'files', 'test-download.jpg')
     with open(path, 'rb') as f:
         local_data = f.read()
 
     assert remote_data == local_data
+
+# test_downloadFile()
 
 
 def test_saveFile():
@@ -110,6 +132,9 @@ def test_saveFile():
     written = functions.saveFile('', 'test-save.jpg', remote_data)
 
     assert len(remote_data) == written
+
+
+# test_saveFile()
 
 
 def test_common():
@@ -126,3 +151,6 @@ def test_common():
         responses.respondOk('string')
         responses.respondUnauthorized('string')
         responses.respondWithData({'key': 'value'})
+
+
+# test_common()
